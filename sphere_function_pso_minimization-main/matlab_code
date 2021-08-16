@@ -1,0 +1,116 @@
+x1=[-2:0.1:2];
+x2=[-2:0.1:2];
+[X1,X2]=meshgrid(x1,x2);
+Y = X1.^2+X2.^2;
+
+surf(X1,X2,Y);
+title('SPHERE FUNCTION');
+xlabel('x ekseni');
+ylabel('y ekseni');
+zlabel('z ekseni');
+hold all
+
+
+
+d=2; as=-2; us=2; ssize=10;
+swarm=unifrnd(as,us,[ssize d]);
+w=0.8; c1=2;
+
+c2=4-c1;
+%uygunluk fonksiyonunu bul
+Z=zeros(ssize,1);
+for i=1:ssize
+    x(i)=swarm(i,1);
+    y(i)=swarm(i,2);
+    Z(i) = sum(swarm(i,:).^2);
+end
+velocity = zeros(ssize,d);
+
+%parçacığın en iyi pozisyonunu ve en iyi değerini bul
+pbestpos = swarm;
+pbestval = Z;
+%sürünün en iyi pozisyonunu ve en iyi değerini bul
+
+sbestval = min(Z);
+idx = find(sbestval == Z);
+sbestpos = swarm(idx,:);
+ 
+%parçacığı iterasyona sok
+iteration=1;
+
+while (sbestval>0.0001)
+%parçacığın hızını bul
+for i=1:ssize
+    
+    velocity(i,:)=w*velocity(i,:)+c1* unifrnd(0,1)*(pbestpos(i,:)-swarm(i,:))+c2*unifrnd(0,1)*(sbestpos-swarm(i,:));
+    
+end
+
+vmax=(us-as)./2;
+
+%hızının alt ve üst limitini kontrol et
+for i=1:ssize
+    for j= 1:d
+        if velocity(i,j) > vmax
+            velocity(i,j) = vmax;
+        elseif velocity(i,j) < -vmax
+            velocity(i,j) = -vmax;
+        end
+    end
+end
+
+%sürüyü güncelle
+swarm = swarm + velocity;
+
+%yeni sürünün limitlerini kontrol et
+for i=1:ssize
+    for j= 1:d
+        if swarm(i,j) > us
+            swarm(i,j) = us;
+        elseif swarm(i,j) < as
+            swarm(i,j) = as;
+        end
+    end
+end
+
+%yeni sürünün uygunluk fonksiyonunu hesapla
+for i=1:ssize
+    x(i)=swarm(i,1);
+    y(i)=swarm(i,2);
+    Z(i) = sum(swarm(i,:).^2);
+end
+
+%parçacık en iyisini güncelle
+    for i=1:ssize
+        if Z(i)<pbestval(i)
+            pbestval(i) = Z(i);
+            pbestpos(i,:) = swarm(i,:);
+        end
+    end 
+
+
+%sürünün en iyisini güncelle
+
+    if min(Z)<sbestval
+        sbestval = min(Z);
+        idx = find(sbestval == Z);
+        sbestpos = swarm(idx,:);
+    end
+    iteration=iteration+1;
+    w=w-0.01;
+
+    
+    scatter3(x,y,Z,'filled');
+    drawnow;
+    pause(0.1);
+    
+    
+
+end
+    hold off
+    iteration
+    velocity
+    pbestpos
+    pbestval
+    sbestpos
+    sbestval
